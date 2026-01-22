@@ -208,7 +208,7 @@ new SSEInstance(url, options, filters, AdapterClass);
         // 注意：如果未指定 Content-Type，默认会自动设置为 'application/json'
     },
 
-    // fetchEventSource的其他配置项（仅WebAdapter）
+    // fetchEventSource的其他配置项
     // 详见: https://github.com/Azure/fetch-event-source
     onopen: function(response) {       // 连接打开时的回调
         // 自定义onopen处理逻辑
