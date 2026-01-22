@@ -1,0 +1,65 @@
+{
+  "name": "sse-client",
+  "description": "",
+  "license": "MIT",
+  "version": "0.0.1",
+  "author": "xuhao",
+  "main": "dist/release.cjs.js",
+  "module": "dist/release.ems.js",
+  "browser": "dist/release.umd.js",
+  "exports": {
+    ".": {
+      "import": "./dist/release.esm.js",
+      "require": "./dist/release.cjs.js",
+      "browser": "./dist/release.umd.js"
+    },
+    "./dev": {
+      "import": "./dist/dev.esm.js",
+      "require": "./dist/dev.cjs.js",
+      "browser": "./dist/dev.umd.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "*.d.ts",
+    "demo"
+  ],
+  "scripts": {
+    "lint": "npx oxlint src",
+    "start": "rollup -wc rollup.config.mjs",
+    "dev": "rollup -wc rollup.config.dev.mjs",
+    "test": "rollup -c rollup.config.test.mjs",
+    "test:push": "rollup -c rollup.config.test.mjs --push",
+    "prod": "npm run lint && rollup -c rollup.config.prod.mjs --ver",
+    "prod:push": "npm run lint && rollup -c rollup.config.prod.mjs --ver --push",
+    "final": "rollup -c rollup.config.prod.mjs",
+    "final:push": "npm run lint && rollup -c rollup.config.prod.mjs --push"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
+    "@rollup/plugin-alias": "^5.1.1",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.7",
+    "@rollup/plugin-strip": "^3.0.4",
+    "@rollup/plugin-terser": "^0.4.4",
+    "form-data": "^4.0.0",
+    "lint-staged": "^15.4.3",
+    "rollup": "^4.34.8",
+    "rollup-plugin-serve": "^3.0.0"
+  },
+  "dependencies": {
+    "@microsoft/fetch-event-source": "2.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "> 2%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}

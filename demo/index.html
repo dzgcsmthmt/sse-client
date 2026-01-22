@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <link
+            rel="stylesheet"
+            crossorigin="anonymous"
+            href="https://static.pkulaw.com/assets/css/markdown.min.38cfdf61.css"
+        />
+        <script src="https://static.pkulaw.com/assets/js/vue.min.aba74e7d.js"></script>
+    </head>
+
+    <body>
+        <div id="app"></div>
+
+        <script type="module">
+            import { SSEInstance, BaseFilter } from "/dev.esm.js";
+            class MessageFilter extends BaseFilter {
+                constructor() {
+                    super();
+                    this.filterType = "message";
+                }
+
+                /**
+                 * 判断是否可以处理内容消息
+                 * @param {Object} msg - 消息对象
+                 * @returns {boolean}
+                 */
+                canHandle(msg) {
+                    return msg.event === "chat_reply";
+                }
+
+                /**
+                 * 处理内容消息
+                 * @param {Object} msg - 消息对象
+                 * @param {SSEInstance} sseInstance - SSE实例
+                 * @returns {boolean}
+                 */
+                process(msg, sseInstance) {
+                    sseInstance.emit("message", msg.message_id, msg.data);
+                    return true;
+                }
+            }
+
+            /**
+             * 初始化Vue应用实例
+             * 创建Vue实例来管理页面状态和数据
+             */
+            const app = new Vue({
+                el: "#app",
+                data: {
+                    isGenerating: false,
+                    generateDone: false,
+                    generateError: false,
+                    generateAbort: false,
+                    msg: "",
+                    thinkingMsg: "",
+                    messageId: "",
+                },
+                mounted() {
+                    this.initSse();
+                },
+                methods: {
+                    initSse() {
+                        // 新的使用方式：不传入 Vue 实例，通过事件监听来处理数据
+                        this.sse = new SSEInstance(
+                            "https://your-api-endpoint.com/sse", // API地址
+                            {
+                                data: {
+                                    // 请求数据
+                                    conversation_id: "your-conversation-id",
+                                    model_codes: ["gpt-4o-mini"],
+                                },
+                                headers: {
+                                    Authorization: "Bearer your-access-token", // 认证token放在headers中（可选，如果提供了refreshToken，token会自动更新到headers）
+                                },
+                                refreshToken: handleTokenRefresh, // token刷新处理函数，返回的新token会自动更新到headers的Authorization字段
+                            },
+                            [MessageFilter],
+                        );
+                        //也可以通过replaceFilter替换
+                        /*  this.sse.filterManager.replaceFilter(
+                            "message",
+                            new MessageFilter(),
+                        ); */
+
+                        // 监听各种事件
+                        this.sse.on("error", this.handleSSEError);
+                        this.sse.on("think", this.handleThinkEvent);
+                        this.sse.on("message", this.handleMessageEvent);
+                        this.sse.on("rawMessage", this.handleRawMessageEvent);
+                        this.sse.on("close", this.handleCloseEvent);
+                    },
+                    handleTokenRefresh(token) {
+                        return requestFreshToken({
+                            access_token: this.token.slice(7),
+                            client_id: "pkulaw",
+                        }).then((res) => {
+                            const token = res.access_token;
+                            return token;
+                        });
+                    },
+                    /**
+                     * 开始SSE连接
+                     * 创建SSE实例并监听事件
+                     */
+                    startConnection() {
+                        console.log("开始连接");
+                        this.sse.connect();
+                    },
+
+                    /**
+                     * 停止SSE连接
+                     * 关闭当前连接并清理状态
+                     */
+                    stopConnection() {
+                        if (this.sse) {
+                            this.sse.abort();
+                        }
+                    },
+                    handleRawMessageEvent(msg) {
+                        console.log("rawMessage", msg);
+                    },
+                    handleSSEError(error) {
+                        if (error.status === 401) {
+                            console.log("您的登录状态已失效，还请重新登录");
+                        } else if (error.status === 500) {
+                            console.log("服务器错误:", error.message);
+                        } else if (error.status === 422) {
+                            console.log("数据格式错误:", error.message);
+                        } else {
+                            console.log(error.message);
+                        }
+                    },
+
+                    /**
+                     * 处理思考事件
+                     */
+                    handleThinkEvent(data) {
+                        this.thinkingMsg += data;
+                    },
+                    /**
+                     * 处理消息事件
+                     */
+                    handleMessageEvent(messageId, data) {
+                        this.messageId = messageId;
+                        this.msg += data;
+                    },
+
+                    handleCloseEvent() {
+                        console.log("close");
+                    },
+                },
+                template: `
+                    <div>
+                        <div style="margin-bottom: 20px;">
+                            <h2>SSE客户端测试</h2>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <button @click="startConnection" style="margin-right: 10px;">
+                                开始连接
+                            </button>
+                            <button @click="stopConnection" style="margin-right: 10px;">
+                                停止连接
+                            </button>
+                        </div>
+                        <div style="border: 1px solid #ccc; padding: 15px; background: #f9f9f9; max-height: 400px; overflow-y: auto;">
+                            <h3>接收到的内容:{{messageId}}</h3>
+                            <div v-html="thinkingMsg"></div>
+                            <div v-html="msg"></div>
+                        </div>
+                    </div>
+                `,
+            });
+        </script>
+    </body>
+</html>

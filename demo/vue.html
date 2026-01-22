@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://static.pkulaw.com/statics/js/vue.min.js"></script>
+    <script src="/dev.umd.js"></script>
+    <title>Vue Html</title>
+</head>
+<body>
+    <div id="app">
+        <h1>准备开始Vue</h1>
+    </div>
+    <script>
+        console.log('fbModule.TestVue :>> ', fbModule.TestVue);
+        const appDom = window.document.getElementById("app");
+        if (appDom) {
+            new Vue({
+                el: "#app",
+                render: (h) => h(fbModule.TestVue.VueApp),
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>使用script方法 引入 Demo Test</h1> 
+    <div id="test">
+
+    </div>
+    <script src="/dev.umd.js"></script>
+    <script>
+        // 使用项目名称引入变量 命名空间在window.fbModule中
+        const Test = window.fbModule["base-sdk"];
+        // 将Test属性逐行打印到test dom上
+        const test = Test.default();
+        const element = document.getElementById("test");
+        for (const key in test) {
+            const p = document.createElement("p");
+            if(typeof test[key] == "object"){
+                p.innerText = key + "=" + JSON.stringify(test[key]);
+            }else{
+                p.innerText = key + "=" + test[key];
+            }
+            element.appendChild(p);
+        }
+
+        const p = document.createElement("p");
+        p.innerHTML = "<b>非default输出方法</b><br>" + Test.TestFun();
+        element.appendChild(p);
+    </script>
+    
+</body>
+</html>
