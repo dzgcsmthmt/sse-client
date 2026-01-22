@@ -513,8 +513,6 @@ src/
     ├── baseFilter.js     # 基础过滤器类
     ├── thinkFilter.js    # 思考过滤器
     ├── messageFilter.js  # 消息过滤器
-    ├── replaceFilter.js  # 替换过滤器
-    └── messageEndFilter.js # 消息结束过滤器
 ```
 
 ## 构建和开发
