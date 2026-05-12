@@ -58,7 +58,7 @@ const sse = new SSEInstance(
         },
         // 二选一：自定义刷新函数，或配置 refresh_token_address 由库自动请求（见下文「Token 刷新」）
         refreshToken: handleTokenRefresh,
-        // refresh_token_address: "https://www.pkulaw.com",
+        // refresh_token_address: "https://www.xh.com",
     },
 );
 
@@ -194,10 +194,10 @@ new SSEInstance(url, options, filters, AdapterClass);
 
     // 方式二：配置 refresh_token_address，由库自动请求刷新（实现见 src/utils.js 的 refreshToken）
     // 请求地址为：{refresh_token_address}/gateway/account/auth/refreshtoken，POST JSON：access_token（去掉 Bearer）、client_id
-    // client_id 默认为 pkulaw，可通过下方 client_id 覆盖
-    // refresh_token_address: 'https://www.pkulaw.com',
+    // client_id 默认为 xh，可通过下方 client_id 覆盖
+    // refresh_token_address: 'https://www.xh.com',
 
-    client_id: 'pkulaw', // 与 refresh_token_address 联用时传递给刷新接口，默认 pkulaw
+    client_id: 'xh', // 与 refresh_token_address 联用时传递给刷新接口，默认 xh
 
     // 库完成刷新并重连成功后回调（可选）
     // refreshTokenSuccessed: function (newToken) { /* ... */ },
@@ -232,14 +232,14 @@ new SSEInstance(url, options, filters, AdapterClass);
 #### Token 刷新（`refreshToken` 与 `refresh_token_address`）
 
 - **自定义函数**：配置 `options.refreshToken(oldToken)`，在 401 时由你自行请求刷新接口，并 `resolve` 新的 access token 字符串。
-- **自动刷新**：配置 `options.refresh_token_address` 为站点根地址（无需带刷新路径），库会向 `{refresh_token_address}/gateway/account/auth/refreshtoken` 发起 POST，请求体为当前 `access_token`（自动去掉 `Bearer `）与 `client_id`（默认 `pkulaw`，可通过 `options.client_id` 修改）。二者同时配置时，**优先使用** `refreshToken` 函数。
+- **自动刷新**：配置 `options.refresh_token_address` 为站点根地址（无需带刷新路径），库会向 `{refresh_token_address}/gateway/account/auth/refreshtoken` 发起 POST，请求体为当前 `access_token`（自动去掉 `Bearer `）与 `client_id`（默认 `xh`，可通过 `options.client_id` 修改）。二者同时配置时，**优先使用** `refreshToken` 函数。
 - **北大法宝环境根地址（示例）**：
 
 | 环境 | `refresh_token_address` 示例 |
 | ---- | ---------------------------- |
-| 测试 | `https://test1.pkulaw.com`   |
-| 预发 | `https://pre.pkulaw.com`     |
-| 线上 | `https://www.pkulaw.com`     |
+| 测试 | `https://test1.xh.com`   |
+| 预发 | `https://pre.xh.com`     |
+| 线上 | `https://www.xh.com`     |
 
 刷新成功并重连后，若配置了 `options.refreshTokenSuccessed`，会以新 token 为参数调用该回调。
 
