@@ -1,19 +1,31 @@
-import { WebAdapter, WeixinAdapter } from "./adapters/index.js";
-
-/**
- * 检测当前运行环境是否为微信小程序
- * @returns {boolean} 如果在微信小程序环境返回 true，否则返回 false
- */
-export function isWeixinMiniProgram() {
-    return typeof wx !== 'undefined' && typeof wx.request === 'function';
+export function prependBearer(token) {
+    return token.startsWith("Bearer ") ? token : `Bearer ${token}`;
 }
 
-/**
- * 根据运行环境自动选择默认适配器
- * @returns {Function} 返回适配器类
- */
-export function getDefaultAdapter() {
-    return isWeixinMiniProgram() ? WeixinAdapter : WebAdapter;
+export function isFunction(arg) {
+    return typeof arg === "function";
+}
+
+export function refreshToken(
+    refresh_token_address,
+    token,
+    client_id = "pkulaw",
+) {
+    return fetch(refresh_token_address + "/gateway/account/auth/refreshtoken", {
+        method: "POST",
+        body: JSON.stringify({
+            access_token: token.slice(7),
+            client_id: client_id || "pkulaw",
+        }),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then((response) => {
+        if (!response.ok) {
+            throw new Error("refresh token failed");
+        }
+        return response.json();
+    });
 }
 
 /**
@@ -39,7 +51,7 @@ export function decodeUTF8(bytes) {
             const byte2 = bytes[i++];
             const byte3 = bytes[i++];
             str += String.fromCharCode(
-                ((byte1 & 0x0f) << 12) | ((byte2 & 0x3f) << 6) | (byte3 & 0x3f)
+                ((byte1 & 0x0f) << 12) | ((byte2 & 0x3f) << 6) | (byte3 & 0x3f),
             );
         } else if ((byte1 & 0xf8) === 0xf0) {
             // 四字节字符 (11110xxx 10xxxxxx 10xxxxxx 10xxxxxx)
@@ -55,7 +67,7 @@ export function decodeUTF8(bytes) {
             codePoint -= 0x10000;
             str += String.fromCharCode(
                 0xd800 | (codePoint >> 10),
-                0xdc00 | (codePoint & 0x3ff)
+                0xdc00 | (codePoint & 0x3ff),
             );
         }
     }
@@ -253,7 +265,7 @@ export function stringToUint8Array(str) {
             arr.push(
                 0xe0 | (charCode >> 12),
                 0x80 | ((charCode >> 6) & 0x3f),
-                0x80 | (charCode & 0x3f)
+                0x80 | (charCode & 0x3f),
             );
         } else {
             // UTF-16 代理对
@@ -265,7 +277,7 @@ export function stringToUint8Array(str) {
                 0xf0 | (codePoint >> 18),
                 0x80 | ((codePoint >> 12) & 0x3f),
                 0x80 | ((codePoint >> 6) & 0x3f),
-                0x80 | (codePoint & 0x3f)
+                0x80 | (codePoint & 0x3f),
             );
         }
     }

@@ -5,5 +5,6 @@
 
 // 导入所有过滤器类
 export { BaseFilter } from "./baseFilter.js";
-export { ThinkFilter } from "./ThinkFilter.js";
+export { ThinkingFilter } from "./thinkingFilter.js";
 export { MessageFilter } from "./messageFilter.js";
+export { ErrorFilter } from "./errorFilter.js";

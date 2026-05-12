@@ -1,7 +1,13 @@
 import EventEmitter from "./eventEmitter";
-import { BaseFilter, ThinkFilter, MessageFilter } from "./filters/index.js";
+import {
+    BaseFilter,
+    ThinkingFilter,
+    MessageFilter,
+    ErrorFilter,
+} from "./filters/index.js";
 import FilterManager from "./filterManager.js";
-import { getDefaultAdapter } from "./utils.js";
+import { getDefaultAdapter } from "./defaultAdapter.js";
+import { prependBearer, isFunction, refreshToken } from "./utils.js";
 
 /**
  * SSE客户端类，继承自EventEmitter
@@ -18,7 +24,7 @@ export class SSEInstance extends EventEmitter {
     constructor(
         url,
         options = {},
-        filters = [ThinkFilter, MessageFilter],
+        filters = [ThinkingFilter, MessageFilter, ErrorFilter],
         AdapterClass,
     ) {
         super();
@@ -27,11 +33,20 @@ export class SSEInstance extends EventEmitter {
         }
         this.url = url;
         this.options = options;
+        this.handleHeaderAuthorization();
         this.initializeFilterChain(filters);
         // 如果没有传入适配器类，则根据环境自动选择
         const Adapter = AdapterClass || getDefaultAdapter();
         // 初始化适配器
         this.adapter = new Adapter(url, options, this);
+    }
+
+    handleHeaderAuthorization() {
+        if (this.options.headers?.Authorization) {
+            this.options.headers.Authorization = prependBearer(
+                this.options.headers.Authorization,
+            );
+        }
     }
 
     /**
@@ -76,30 +91,40 @@ export class SSEInstance extends EventEmitter {
      * 处理当用户未授权时的方法
      */
     unauthorized() {
-        const { refreshToken } = this.options;
-        if (typeof refreshToken === "function") {
-            const old_token = this.token;
-            refreshToken(old_token)
-                .then((access_token) => {
-                    // 更新 options.headers 中的 Authorization（如果存在）
-                    if (
-                        this.options.headers &&
-                        this.options.headers.Authorization
-                    ) {
-                        // 检查 token 是否已经包含 "Bearer " 前缀
-                        const token = access_token.startsWith("Bearer ")
-                            ? access_token
-                            : `Bearer ${access_token}`;
-                        this.options.headers.Authorization = token;
-                    }
-                    this.connect();
-                })
-                .catch(() => {
-                    this.error401();
-                });
+        const old_token = this.options.headers.Authorization;
+        let currentRefreshToken;
+        if (isFunction(this.options.refreshToken)) {
+            currentRefreshToken = this.options.refreshToken(old_token);
+        } else if (this.options.refresh_token_address) {
+            currentRefreshToken = refreshToken(
+                this.options.refresh_token_address,
+                old_token,
+                this.options.client_id || "pkulaw",
+            );
         } else {
             this.error401();
+            return Promise.reject(new Error("refresh token failed"));
         }
+        return currentRefreshToken
+            .then((access_token) => {
+                this.handleReconnect(access_token);
+                if (isFunction(this.options.refreshTokenSuccessed)) {
+                    this.options.refreshTokenSuccessed(access_token);
+                }
+                return Promise.resolve(true);
+            })
+            .catch(() => {
+                this.error401();
+                return Promise.reject(new Error("refresh token failed"));
+            });
+    }
+
+    handleReconnect(access_token) {
+        // 更新 options.headers 中的 Authorization（如果存在）
+        if (this.options.headers?.Authorization) {
+            this.options.headers.Authorization = prependBearer(access_token);
+        }
+        this.connect();
     }
 
     /**
@@ -112,7 +137,7 @@ export class SSEInstance extends EventEmitter {
 }
 
 // 重新导出过滤器类和管理器，允许用户创建自定义过滤器
-export { BaseFilter };
+export { BaseFilter, ThinkingFilter, MessageFilter, ErrorFilter };
 
 // 导出适配器，允许用户扩展自定义平台
 export { BaseAdapter } from "./adapters/index.js";

@@ -1,9 +1,13 @@
 {
-  "name": "sse-client",
+  "name": "fb-sse-client",
   "description": "",
   "license": "MIT",
-  "version": "0.0.1",
-  "author": "xuhao",
+  "version": "0.2.1",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "http://192.168.0.161/module/sse-client"
+  },
   "main": "dist/release.cjs.js",
   "module": "dist/release.ems.js",
   "browser": "dist/release.umd.js",

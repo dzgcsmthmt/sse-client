@@ -12,7 +12,7 @@ export class WeixinAdapter extends BaseAdapter {
     connect() {
         // 从 options 中提取 headers，避免被覆盖
         const { headers: optionsHeaders, ...restOptions } = this.options;
-        
+
         // 构建 headers：如果用户没有指定 Content-Type，则使用默认值 application/json
         const headers = {
             ...(optionsHeaders || {}),
@@ -21,7 +21,7 @@ export class WeixinAdapter extends BaseAdapter {
         if (!headers["Content-Type"] && !headers["content-type"]) {
             headers["Content-Type"] = "application/json";
         }
-        
+
         let _options = {
             method: this.options.method?.toUpperCase() || "POST",
             body:
@@ -40,17 +40,13 @@ export class WeixinAdapter extends BaseAdapter {
             },
             onmessage: (msg) => {
                 if (!msg) return;
-                this.context.emit('rawMessage', msg);
+                this.context.emit("rawMessage", msg);
                 try {
                     const message = JSON.parse(msg.data);
-                    if (message.event === "error") {
-                        const serverError = new Error("服务器繁忙，请稍后再试。");
-                        serverError.status = 500; // 服务器错误
-                        this.context.emit("error", serverError);
-                        return;
-                    }
                     // 使用责任链处理消息
-                    this.context.filterManager.getFilterChain().handle(message, this.context);
+                    this.context.filterManager
+                        .getFilterChain()
+                        .handle(message, this.context);
                 } catch (error) {
                     error.status = error.status || 422; // 数据格式错误
                     this.context.emit("error", error);
@@ -70,7 +66,11 @@ export class WeixinAdapter extends BaseAdapter {
 
         // 创建 SSE 消息解析器
         const onChunk = getLines(
-            getMessages(() => {}, () => {}, _options.onmessage)
+            getMessages(
+                () => {},
+                () => {},
+                _options.onmessage,
+            ),
         );
 
         // 连接前重置状态

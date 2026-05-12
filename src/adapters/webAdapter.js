@@ -10,12 +10,15 @@ export class WebAdapter extends BaseAdapter {
      * 建立 Web 平台的 SSE 连接
      */
     connect() {
+        const connectionId = (this.connectionSequence || 0) + 1;
+        this.connectionSequence = connectionId;
+
         // 连接前重置状态
         this.abortController = new AbortController();
-        
+
         // 从 options 中提取 headers，避免被覆盖
         const { headers: optionsHeaders, ...restOptions } = this.options;
-        
+
         // 构建 headers：如果用户没有指定 Content-Type，则使用默认值 application/json
         const headers = {
             ...(optionsHeaders || {}),
@@ -24,7 +27,7 @@ export class WebAdapter extends BaseAdapter {
         if (!headers["Content-Type"] && !headers["content-type"]) {
             headers["Content-Type"] = "application/json";
         }
-        
+
         let _options = {
             method: this.options.method?.toUpperCase() || "POST",
             body:
@@ -37,35 +40,37 @@ export class WebAdapter extends BaseAdapter {
             onopen: (res) => {
                 const { status } = res;
                 if (status == 401) {
-                    this.context.unauthorized();
-                    return;
+                    this.unauthorizedConnectionId = connectionId;
+                    this.context
+                        .unauthorized()
+                        .catch(() => this.context.emit("close"));
                 } else if (status != 200) {
                     this.context.emit("error", res);
                 }
             },
             onmessage: (msg) => {
                 if (!msg) return;
-                this.context.emit('rawMessage', msg);
+                this.context.emit("rawMessage", msg);
                 try {
                     const message = JSON.parse(msg.data);
-                    if (message.event === "error") {
-                        const serverError = new Error("服务器繁忙，请稍后再试。");
-                        serverError.status = 500; // 服务器错误
-                        this.context.emit("error", serverError);
-                        return;
-                    }
                     // 使用责任链处理消息
-                    this.context.filterManager.getFilterChain().handle(message, this.context);
+                    this.context.filterManager
+                        .getFilterChain()
+                        .handle(message, this.context);
                 } catch (error) {
                     error.status = error.status || 422; // 数据格式错误
                     this.context.emit("error", error);
                 }
             },
             onclose: () => {
+                if (this.unauthorizedConnectionId === connectionId) {
+                    return;
+                }
                 this.context.emit("close");
             },
             onerror: (err) => {
                 this.context.emit("error", err);
+                this.context.emit("close");
                 throw err;
             },
             // 先展开其他 options

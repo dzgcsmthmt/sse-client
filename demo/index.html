@@ -64,42 +64,62 @@
                 },
                 methods: {
                     initSse() {
+                        this.token =
+                            "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJFXzZpaDM1eVRMSk1pZUkwdnFnOU1tVFFySjZSY1VTeGlYZU5kY01hb1lrIn0.eyJleHAiOjE3NzQ0OTA0NDcsImlhdCI6MTc3NDQ4ODY0NywiYXV0aF90aW1lIjoxNzc0NDAxODg4LCJqdGkiOiIyYzE2YjMxNy05NzdhLTQ2MmItOGFmYy1mNWNkZTY4ZjY3OTMiLCJpc3MiOiJodHRwczovL3Rlc3RjYXMucGt1bGF3LmNvbS9hdXRoL3JlYWxtcy9mYWJhbyIsInN1YiI6Ijk4ZmRmNjE4LTM3NTQtNDhkZi1hYmFiLTdmMjcyZmYzZDRiZSIsInR5cCI6IkJlYXJlciIsImF6cCI6InBrdWxhdyIsInNlc3Npb25fc3RhdGUiOiI2ZjE1ZTU5ZS03MzI5LTQ3OGUtYTM2ZC05Y2YwZTE5OTY1MDEiLCJhY3IiOiIwIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImxhd2Zpcm0iLCJwZW5hbHR5IiwiYmVsdHJvYWQiLCJib29rIiwiZ2xvYmFsIiwidmlkZW8iLCJyZWZlcmVuY2UiLCJqb3VybmFsIiwiZmJoZyIsImZncWNhaSIsInN1cGVydmlzaW9uIiwiZW5nbGlzaCIsImNyaW1pbmFsIiwiY29udG9waWMiLCJjYXNlIiwicHJvY3VyYXRvcmF0ZSIsImNhc2VzIiwibGF3IiwiYnVzaW5lc3MiLCJyaXNrbGVucy12aXAiLCJncSIsImlwciIsImJhbmt0b3BpYyIsImZibHEiLCJsYWJvciIsInRlbGV0b3BpYyIsImV4YW0iLCJDT01QQVJFIiwibWluZG1hcCIsInBhcnR5IiwiZmluYW5jZSJdfSwic2NvcGUiOiJvcGVuaWQgcm9sZXMgcGt1bGF3LWV4dGVuc2lvbnMgdXNlckdyb3VwIGVtYWlsIHY2IHByb2ZpbGUiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImxvZ2luVHlwZSI6InBhc3N3b3JkIiwiZ3JvdXBzIjpbXSwiZGVmYXVsdEFpZCI6ImE0ODJjM2MzLTFjMjItNDQ2MC05YjRiLWZlYWUwYjBiMWQ4YSIsImV4dGVuc2lvbl9yb2xlcyI6e30sInByZWZlcnJlZF91c2VybmFtZSI6InhoMDEiLCJjdXJyZW50VXNlckFjY291bnQiOiJhNDgyYzNjMy0xYzIyLTQ0NjAtOWI0Yi1mZWFlMGIwYjFkOGEiLCJwaG9uZU51bWJlciI6IjEzNDM2ODIxNjU1IiwibG9naW5JcCI6IjExMS4xOTguMTQzLjE5NCIsImlzRmVkZXJhbFVzZXIiOjEsIm5pY2tuYW1lIjoieGgwMSIsInBob25lTnVtYmVyVmVyaWZpZWQiOiJ0cnVlIiwiaXNHcm91cFVzZXIiOiIwIiwiYWlkIjpbImE0ODJjM2MzLTFjMjItNDQ2MC05YjRiLWZlYWUwYjBiMWQ4YSJdLCJlbWFpbCI6IjE3ODkyMjIyMkBxcS5jb20iLCJrZXkiOiJzdWIifQ.h6zrlOmvUUsb4MghGib0L5kpucYlDdKZCXfrrcjp0MN2tQdMO--qc7H-hYAlJ3pbVh0A8dbOCxGvfW5Zitp87RSOvqICVYV0mr0cxUdbQ7VyqPTQhPKGE7tMya-9H_BdPxcZU0PqeEEMHA0LyTe4pWC9zgQKv5Unt6lYWqqJf26ZwBdgYc98f146MjToSdM0lQJxG8qJN4_2n7coqoGKi2CVcsgKMCUO64hUct6_CSB5RlmDXB2zbMQ_eQH--lWp00Ic3aDgaXEKTdky4sSYEcQac07NSmK7vtqxM0P8UClaDT2y_KwvroYU0GiLRqrQJtZHCobw1eDMjbCp-rVsmw";
+
                         // 新的使用方式：不传入 Vue 实例，通过事件监听来处理数据
                         this.sse = new SSEInstance(
-                            "https://your-api-endpoint.com/sse", // API地址
+                            "https://gateway.pkulaw.com/pkulaw-chat-gpt-api-4/6.0.0.0/gpt/writer/aswDialogue", // 示例URL
                             {
                                 data: {
-                                    // 请求数据
-                                    conversation_id: "your-conversation-id",
-                                    model_codes: ["gpt-4o-mini"],
+                                    model: "deepseek-v3",
+                                    ask: "麦当劳案",
+                                    withContext: true,
                                 },
                                 headers: {
-                                    Authorization: "Bearer your-access-token", // 认证token放在headers中（可选，如果提供了refreshToken，token会自动更新到headers）
+                                    Authorization: this.token,
                                 },
-                                refreshToken: handleTokenRefresh, // token刷新处理函数，返回的新token会自动更新到headers的Authorization字段
+                                // refresh_token_address:
+                                //     "https://test1.pkulaw.com",
+                                refreshTokenSuccessed:
+                                    this.handleRefreshTokenSuccessed,
+                                refreshToken: this.handleTokenRefresh,
                             },
-                            [MessageFilter],
                         );
-                        //也可以通过replaceFilter替换
-                        /*  this.sse.filterManager.replaceFilter(
+
+                        this.sse.filterManager.replaceFilter(
                             "message",
                             new MessageFilter(),
-                        ); */
+                        );
 
                         // 监听各种事件
-                        this.sse.on("error", this.handleSSEError);
-                        this.sse.on("think", this.handleThinkEvent);
-                        this.sse.on("message", this.handleMessageEvent);
                         this.sse.on("rawMessage", this.handleRawMessageEvent);
+                        this.sse.on("thinking", this.handleThinkingEvent);
+                        this.sse.on("message", this.handleMessageEvent);
+                        this.sse.on("error", this.handleSSEError);
                         this.sse.on("close", this.handleCloseEvent);
                     },
+                    handleRefreshTokenSuccessed(data) {
+                        console.log("refresh token successed", data);
+                    },
                     handleTokenRefresh(token) {
-                        return requestFreshToken({
-                            access_token: this.token.slice(7),
-                            client_id: "pkulaw",
-                        }).then((res) => {
-                            const token = res.access_token;
-                            return token;
+                        return fetch(
+                            "https://www.pkulaw.com/gateway/account/auth/refreshtoken",
+                            {
+                                method: "POST",
+                                body: JSON.stringify({
+                                    access_token: token.slice(7),
+                                    client_id: "pkulaw",
+                                }),
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                            },
+                        ).then((response) => {
+                            if (!response.ok) {
+                                throw new Error("refresh token failed");
+                            }
+                            return response.json();
                         });
                     },
                     /**
@@ -134,11 +154,10 @@
                             console.log(error.message);
                         }
                     },
-
                     /**
                      * 处理思考事件
                      */
-                    handleThinkEvent(data) {
+                    handleThinkingEvent(data) {
                         this.thinkingMsg += data;
                     },
                     /**
@@ -148,7 +167,6 @@
                         this.messageId = messageId;
                         this.msg += data;
                     },
-
                     handleCloseEvent() {
                         console.log("close");
                     },
